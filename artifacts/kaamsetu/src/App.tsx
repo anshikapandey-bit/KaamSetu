@@ -86,7 +86,7 @@ function AppShell({ children }: { children: ReactNode }) {
         <Link href="/" className="brand" data-testid="link-brand"><span className="brand-mark"><Handshake size={24} /></span><span><span className="brand-name">KaamSetu</span><span className="brand-caption">Local work, fair pay</span></span></Link>
         <div className="nav-section-label">Your workspace</div>
         <nav className="nav-links" aria-label="Main navigation">
-          {navItems.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={`nav-link ${path === href ? 'active' : ''}`} data-testid={`link-nav-${href.slice(1) || 'overview'}`}><Icon /><span>{label}</span></Link>)}
+          {navItems.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={`nav-link ${path === href ? 'active' : ''}`} aria-current={path === href ? 'page' : undefined} data-testid={`link-nav-${href.slice(1) || 'overview'}`}><Icon /><span>{label}</span></Link>)}
         </nav>
         <div className="nav-bottom"><div className="nav-status"><span className="status-dot" />{health.isError ? 'Connection needs attention' : 'Marketplace available'}</div><small>{demoStatus?.notice ?? 'Local work, fair pay, clear expectations.'}</small></div>
       </aside>
@@ -94,7 +94,7 @@ function AppShell({ children }: { children: ReactNode }) {
         <header className="topbar"><div className="crumb">KaamSetu <span aria-hidden="true">/</span> <strong>{navItems.find((item) => item.href === path)?.label ?? 'Workspace'}</strong></div><div className="topbar-right"><span>{workerId ? 'Worker mode active' : 'Welcome to KaamSetu'}</span><span className="avatar">{workerId ? 'W' : 'K'}</span></div></header>
         <main className="page-wrap">{children}</main>
       </div>
-      <nav className="bottom-nav" aria-label="Mobile navigation">{navItems.map(({ href, short, icon: Icon }) => <Link key={href} href={href} className={path === href ? 'active' : ''} data-testid={`mobile-nav-${href.slice(1) || 'overview'}`}><Icon /><span>{short}</span></Link>)}</nav>
+      <nav className="bottom-nav" aria-label="Mobile navigation">{navItems.map(({ href, short, icon: Icon }) => <Link key={href} href={href} className={path === href ? 'active' : ''} aria-current={path === href ? 'page' : undefined} data-testid={`mobile-nav-${href.slice(1) || 'overview'}`}><Icon /><span>{short}</span></Link>)}</nav>
     </div>
   </WorkerContext.Provider>;
 }
@@ -104,9 +104,13 @@ const WorkerContext = createContext<WorkerContextValue>({ workerId: '', setActiv
 function useWorkerContext() { return useContext(WorkerContext); }
 
 function DashboardPage() {
+  const { workerId } = useWorkerContext();
   const summary = useGetDashboardSummary();
   const status = useGetDemoStatus();
   const jobs = useListJobs();
+  const profile = useGetWorker(workerId, { query: { enabled: !!workerId, queryKey: getGetWorkerQueryKey(workerId) } });
+  const matches = useListWorkerMatches(workerId, { query: { enabled: !!workerId, queryKey: getListWorkerMatchesQueryKey(workerId) } });
+  const applications = useListWorkerApplications(workerId, { query: { enabled: !!workerId, queryKey: getListWorkerApplicationsQueryKey(workerId) } });
   const counts = summary.data;
   const metrics: [string, number | undefined, typeof BriefcaseBusiness][] = [
     ['Job listings', counts?.totalJobs, BriefcaseBusiness],
@@ -115,12 +119,42 @@ function DashboardPage() {
     ['Connections made', counts?.successfulConnections, Handshake],
     ['Awaiting review', counts?.pendingReview, ShieldAlert],
   ];
+  const worker = profile.data;
+  const completionFields = worker ? [worker.name, worker.skills.length > 0, worker.location, worker.experienceYears >= 0, worker.expectedDailyWage > 0, worker.availability] : [];
+  const completion = completionFields.length ? Math.round(completionFields.filter(Boolean).length / completionFields.length * 100) : 0;
+  if (workerId) {
+    return <div className="grid fade-in">
+      {profile.isError && <ErrorNotice error={profile.error} retry={() => void profile.refetch()} />}
+      {profile.isLoading ? <div className="skeleton" style={{ height: 190 }} aria-label="Loading your worker dashboard" /> : worker ? <>
+        <section className="personal-hero" data-testid="worker-dashboard">
+          <div><p className="eyebrow">Your KaamSetu workspace</p><h1>Namaste, {worker.name.split(' ')[0]}.</h1><p>Here’s what’s happening with your work profile today.</p></div>
+          <div className="profile-progress" data-testid="profile-completion"><div className="progress-top"><strong>Profile completion</strong><strong>{completion}%</strong></div><div className="progress-track" role="progressbar" aria-label="Profile completion" aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}><div className="progress-fill" style={{ width: `${completion}%` }} /></div><Link href="/worker-profile" className="button button-secondary button-small" style={{ marginTop: 12 }}>Improve profile <ArrowRight size={15} /></Link></div>
+        </section>
+        {status.data && <div className="alert info" data-testid="status-demo-notice"><strong>{status.data.isDemoMode ? 'Demo experience' : 'Storage status'}:</strong> {status.data.notice} {status.data.storage === 'memory' ? 'Changes may not stay after a server restart.' : ''}</div>}
+        <section className="dashboard-columns">
+          <div className="panel panel-pad dashboard-section">
+            <div className="page-head" style={{ marginBottom: 12 }}><div><p className="eyebrow">Chosen for your skills</p><h2 className="section-title">Recommended work</h2></div><Link className="button button-quiet button-small" href="/find-work" data-testid="link-dashboard-find-work">Browse all <ArrowRight size={15} /></Link></div>
+            {matches.isLoading ? <LoadingCards count={2} /> : matches.isError ? <ErrorNotice error={matches.error} retry={() => void matches.refetch()} /> : matches.data?.length ? matches.data.slice(0, 3).map((match) => <article className="mini-job" key={match.job.id} data-testid={`recommended-job-${match.job.id}`}><div className="job-card-top"><div><h3>{match.job.title}</h3><div className="meta-row"><span className="meta-item"><MapPin />{match.job.location}</span><span>₹{money(match.job.paymentMin)}–₹{money(match.job.paymentMax)} / {match.job.paymentUnit}</span></div></div><span className="score">{match.score}% fit</span></div><div className="match-reasons"><strong>Why it may suit you</strong>{match.reasons.length ? match.reasons.join(' · ') : 'Your profile details align with this opportunity.'}</div></article>) : <EmptyState icon={BriefcaseBusiness} title="No matches just yet" description="As nearby listings fit your skills and location, they will appear here." action={<Link href="/find-work" className="button button-small" data-testid="link-browse-from-dashboard">Browse work</Link>} />}
+          </div>
+          <div className="panel panel-pad dashboard-section">
+            <p className="eyebrow">Your next steps</p><h2 className="section-title">Application status</h2>
+            {applications.isLoading ? <LoadingCards count={1} /> : applications.isError ? <ErrorNotice error={applications.error} retry={() => void applications.refetch()} /> : applications.data?.length ? <div className="application-status-card" data-testid="dashboard-applications">{applications.data.slice(0, 4).map((item) => <div className="application-status-line" key={item.id} data-testid={`dashboard-application-${item.id}`}><div><strong>{item.jobTitle}</strong><div className="subtle" style={{ fontSize: 12, marginTop: 4 }}>{item.employerName} · {dateLabel(item.createdAt)}</div></div><span className={`badge ${item.status}`}>{item.status === 'pending' ? 'Waiting' : item.status === 'accepted' ? 'Accepted' : 'Not selected'}</span></div>)}</div> : <EmptyState icon={ClipboardList} title="No applications yet" description="Found work that feels right? Apply and follow its progress here." action={<Link href="/find-work" className="button button-small">Find work</Link>} />}
+            <Link href="/applications" className="button button-quiet button-small" style={{ marginTop: 14 }} data-testid="link-all-applications">All applications <ArrowRight size={15} /></Link>
+          </div>
+        </section>
+        <section className="panel panel-pad" data-testid="dashboard-profile-summary"><div className="page-head" style={{ marginBottom: 10 }}><div><p className="eyebrow">Your profile</p><h2 className="section-title">A clear profile builds trust</h2></div><Link href="/worker-profile" className="button button-quiet button-small">Edit profile</Link></div><div className="tag-row">{worker.skills.map((skill) => <span className="tag" key={skill}>{skill}</span>)}</div><p className="subtle" style={{ margin: '12px 0 0', fontSize: 13 }}>{worker.location} · {worker.experienceYears} years experience · Available: {worker.availability}</p></section>
+      </> : <EmptyState icon={UserRound} title="We could not find this profile" description="Choose a current worker profile to see your personalized dashboard." action={<Link href="/worker-profile" className="button">Choose profile</Link>} />}
+    </div>;
+  }
   return <div className="grid fade-in">
     <section className="welcome">
-      <p className="eyebrow">Connect Skills. Create Opportunities.</p>
-      <h1>Good work starts with a fair connection.</h1>
-      <p>Find nearby opportunities that fit your skills, or meet dependable workers in your community. Clear details. Respectful choices. No middleman.</p>
-      <div className="welcome-actions"><Link href="/find-work" className="button" data-testid="link-find-work-hero">Find Work <ArrowRight /></Link><Link href="/hire" className="button button-secondary" data-testid="link-hire-workers-hero">Hire Workers</Link></div>
+      <div className="welcome-copy"><p className="eyebrow">Connect Skills. Create Opportunities.</p><h1>Good work starts with a fair connection.</h1><p>Find nearby opportunities that fit your skills, or meet dependable workers in your community. Clear details. Respectful choices. No middleman.</p><div className="welcome-actions"><Link href="/find-work" className="button" data-testid="link-find-work-hero">Find Work <ArrowRight /></Link><Link href="/hire" className="button button-secondary" data-testid="link-hire-workers-hero">Hire Workers</Link></div></div>
+      <div className="welcome-photo"><img src="/kaamsetu-workers-home.jpg" alt="Skilled neighborhood workers ready to find their next opportunity" data-testid="img-home-workers" /></div>
+    </section>
+    <section className="steps-strip" aria-label="How to get started" data-testid="getting-started-steps">
+      <div className="step-item"><span className="step-number">1</span><span>Create Profile</span><ArrowRight className="steps-arrow" size={15} /></div>
+      <div className="step-item"><span className="step-number">2</span><span>Find Matches</span><ArrowRight className="steps-arrow" size={15} /></div>
+      <div className="step-item"><span className="step-number">3</span><span>Apply for Work</span></div>
     </section>
     {status.data && <div className="alert info" data-testid="status-demo-notice"><strong>{status.data.isDemoMode ? 'Demo experience' : 'Storage status'}:</strong> {status.data.notice} {status.data.storage === 'memory' ? 'Changes may not stay after a server restart.' : ''}</div>}
     {summary.isError && <ErrorNotice error={summary.error} retry={() => void summary.refetch()} />}
@@ -219,6 +253,47 @@ function FindWorkPage() {
 }
 
 const defaultWorkerForm = { name: '', skills: '', location: '', experienceYears: '', expectedDailyWage: '', availability: '' };
+const skillVocabulary = [
+  { skill: 'masonry', terms: ['mason', 'masonry', 'brick', 'bricklaying', 'cement', 'concrete', 'plaster'] },
+  { skill: 'painting', terms: ['paint', 'painting', 'painter', 'wall colour', 'colouring'] },
+  { skill: 'carpentry', terms: ['carpenter', 'carpentry', 'woodwork', 'furniture', 'cabinet'] },
+  { skill: 'plumbing', terms: ['plumber', 'plumbing', 'pipe', 'tap', 'water line'] },
+  { skill: 'electrical work', terms: ['electrician', 'electrical', 'wiring', 'switchboard', 'lights'] },
+  { skill: 'welding', terms: ['weld', 'welding', 'fabrication', 'metal work'] },
+  { skill: 'tile laying', terms: ['tile', 'tiling', 'flooring', 'marble'] },
+  { skill: 'cleaning', terms: ['clean', 'cleaning', 'housekeeping'] },
+  { skill: 'driving', terms: ['drive', 'driving', 'driver', 'vehicle'] },
+  { skill: 'gardening', terms: ['garden', 'gardening', 'landscaping', 'plants'] },
+  { skill: 'cooking', terms: ['cook', 'cooking', 'kitchen', 'chef'] },
+  { skill: 'tailoring', terms: ['tailor', 'tailoring', 'stitch', 'sewing', 'garment'] },
+  { skill: 'security', terms: ['security', 'guard', 'watchman'] },
+  { skill: 'machine operation', terms: ['machine', 'machinery', 'operator', 'equipment'] },
+];
+
+function SkillPassport({ onUseSuggestions }: { onUseSuggestions: (skills: string[]) => void }) {
+  const [description, setDescription] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState('');
+  const createSuggestions = () => {
+    const normalized = description.toLowerCase();
+    const found = skillVocabulary.filter(({ terms }) => terms.some((term) => normalized.includes(term))).map(({ skill }) => skill);
+    setSuggestions(found);
+  };
+  const addSkill = () => {
+    const value = newSkill.trim();
+    if (value.length >= 2 && !suggestions.some((item) => item.toLowerCase() === value.toLowerCase())) setSuggestions((current) => [...current, value]);
+    setNewSkill('');
+  };
+  return <section className="skill-passport" aria-labelledby="passport-title" data-testid="skill-passport">
+    <div className="passport-heading"><div><h3 id="passport-title">Skill Passport</h3><p className="subtle" style={{ margin: 0, fontSize: 12 }}>Describe a task you have done. Review and edit the skill ideas before adding them to your profile.</p></div><span className="rules-badge">Rules-based · AI not configured</span></div>
+    <label className="field"><span>What kind of work have you done?</span><textarea className="control" value={description} maxLength={600} onChange={(event) => setDescription(event.target.value)} placeholder="For example: I repaired brick walls, painted rooms and fixed leaking taps." data-testid="input-skill-description" /></label>
+    <div className="passport-actions"><button className="button button-secondary button-small" type="button" onClick={createSuggestions} disabled={!description.trim()} data-testid="button-suggest-skills">Suggest skills</button><span className="field-hint" role="status" data-testid="status-skill-parser">Suggestions come from a simple on-device word list, not an AI service.</span></div>
+    {suggestions.length > 0 && <div data-testid="list-skill-suggestions"><div className="suggestion-list">{suggestions.map((skill, index) => <span className="suggestion-chip" key={`${skill}-${index}`}><span>{skill}</span><button type="button" aria-label={`Remove ${skill}`} onClick={() => setSuggestions((current) => current.filter((_, itemIndex) => itemIndex !== index))} data-testid={`button-remove-suggestion-${index}`}>×</button></span>)}</div>
+      <div className="passport-actions"><label className="sr-only" htmlFor="passport-add-skill">Add a skill suggestion</label><input id="passport-add-skill" className="control" style={{ maxWidth: 230, minHeight: 38 }} value={newSkill} onChange={(event) => setNewSkill(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addSkill(); } }} placeholder="Add another skill" data-testid="input-add-skill-suggestion" /><button className="button button-quiet button-small" type="button" onClick={addSkill} disabled={newSkill.trim().length < 2} data-testid="button-add-skill-suggestion">Add skill</button><button className="button button-small" type="button" onClick={() => onUseSuggestions(suggestions)} data-testid="button-use-suggestions">Use these skills in profile</button></div>
+    </div>}
+  </section>;
+}
+
 function WorkerProfilePage() {
   const { workerId, setActiveWorker } = useWorkerContext();
   const workers = useListWorkers();
@@ -277,6 +352,12 @@ function WorkerProfilePage() {
           <label className="field"><span>Expected daily wage (₹)</span><input className="control" type="number" min="1" max="1000000" required value={values.expectedDailyWage} onChange={(event) => onChange('expectedDailyWage', event.target.value)} placeholder="For example: 650" data-testid="input-worker-wage" /></label>
           <label className="field full"><span>When are you available?</span><input className="control" value={values.availability} maxLength={120} required onChange={(event) => onChange('availability', event.target.value)} placeholder="For example: weekdays, weekends, or available from 2026-10-25" data-testid="input-worker-availability" /></label>
         </div>
+        <SkillPassport onUseSuggestions={(skills) => {
+          const current = values.skills.split(',').map((item) => item.trim()).filter(Boolean);
+          const merged = [...current];
+          skills.forEach((skill) => { if (!merged.some((item) => item.toLowerCase() === skill.toLowerCase())) merged.push(skill); });
+          onChange('skills', merged.join(', '));
+        }} />
         <div className="form-actions"><button type="submit" className="button" disabled={mutatePending} data-testid="button-save-worker">{mutatePending ? 'Saving your profile…' : workerId ? 'Save changes' : 'Create profile'}</button></div>
       </form>
     </section>}

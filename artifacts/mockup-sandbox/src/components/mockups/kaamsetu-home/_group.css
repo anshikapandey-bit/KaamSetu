@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+.ks-current {
+  --ks-bg: hsl(44 46% 95%);
+  --ks-fg: hsl(158 24% 16%);
+  --ks-border: hsl(42 21% 83%);
+  --ks-card: hsl(45 43% 98%);
+  --ks-muted: hsl(154 10% 41%);
+  --ks-green: hsl(153 39% 24%);
+  --ks-primary: hsl(153 40% 27%);
+  --ks-serif: 'Manrope', sans-serif;
+  --ks-sans: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  background: var(--ks-bg);
+  color: var(--ks-fg);
+  font-family: var(--ks-sans);
+}
+.ks-current * { box-sizing: border-box; }
+.ks-current a { color: inherit; text-decoration: none; }
+.ks-current .frame { min-height: 100vh; }
+.ks-current .sidebar { position: fixed; inset: 0 auto 0 0; display: flex; flex-direction: column; width: 248px; padding: 28px 18px 20px; color: #faf9ed; background: var(--ks-green); }
+.ks-current .brand { display: flex; align-items: center; gap: 12px; padding: 0 10px 30px; }
+.ks-current .mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; color: var(--ks-green); background: hsl(40 79% 75%); }
+.ks-current .brand strong { display: block; font: 800 20px/1 var(--ks-serif); }
+.ks-current .brand small { display: block; margin-top: 5px; color: hsl(44 33% 78%); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.ks-current .side-links { display: grid; gap: 5px; }
+.ks-current .side-links a { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 13px; border-radius: 12px; color: hsl(44 33% 88%); font-size: 13px; font-weight: 600; }
+.ks-current .side-links a:first-child { color: var(--ks-green); background: #faf9ed; }
+.ks-current .side-note { margin-top: auto; padding: 15px 12px; border-top: 1px solid #ffffff33; color: hsl(44 26% 80%); font-size: 11px; line-height: 1.5; }
+.ks-current .main { min-height: 100vh; margin-left: 248px; }
+.ks-current .topbar { display: flex; align-items: center; justify-content: space-between; height: 78px; padding: 0 48px; border-bottom: 1px solid var(--ks-border); }
+.ks-current .topbar span { color: var(--ks-muted); font-size: 12px; }
+.ks-current .content { display: grid; gap: 25px; max-width: 1220px; margin: 0 auto; padding: 42px 48px 70px; }
+.ks-current .welcome { position: relative; overflow: hidden; padding: 34px 38px; border-radius: 22px; color: #faf9ed; background: var(--ks-green); }
+.ks-current .eyebrow { margin: 0 0 9px; color: hsl(40 79% 75%); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.ks-current h1 { max-width: 640px; margin: 0 0 9px; font: 800 clamp(30px,3.3vw,45px)/1.13 var(--ks-serif); letter-spacing: -1.5px; }
+.ks-current .welcome-copy { max-width: 600px; margin: 0 0 20px; color: hsl(44 37% 83%); font-size: 14px; line-height: 1.65; }
+.ks-current .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.ks-current .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 0 17px; border: 1px solid transparent; border-radius: 11px; color: #faf9ed; background: var(--ks-primary); font-size: 13px; font-weight: 700; }
+.ks-current .button.light { color: var(--ks-fg); background: #faf9ed; }
+.ks-current .notice { padding: 12px 14px; border: 1px solid hsl(153 32% 55% / .35); border-radius: 11px; color: hsl(153 30% 23%); background: hsl(97 37% 92%); font-size: 12px; line-height: 1.5; }
+.ks-current .metrics { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
+.ks-current .metric { min-height: 120px; padding: 19px; border: 1px solid var(--ks-border); border-radius: 16px; background: var(--ks-card); }
+.ks-current .metric small { display: block; margin-bottom: 15px; color: var(--ks-muted); font-size: 11px; font-weight: 600; }
+.ks-current .metric strong { font: 800 30px/1 var(--ks-serif); }
+.ks-current .metric span { display: block; margin-top: 9px; color: var(--ks-muted); font-size: 10px; }
+.ks-current h2 { margin: 0 0 14px; font: 800 19px/1.3 var(--ks-serif); }
+.ks-current .actions-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; }
+.ks-current .action-card { display: flex; align-items: flex-start; gap: 14px; padding: 19px; border: 1px solid var(--ks-border); border-radius: 17px; background: var(--ks-card); }
+.ks-current .action-icon { display: grid; flex: 0 0 42px; place-items: center; width: 42px; height: 42px; border-radius: 14px; color: var(--ks-primary); background: hsl(82 31% 87%); }
+.ks-current .action-card strong { display: block; margin: 1px 0 5px; font: 800 15px var(--ks-serif); }
+.ks-current .action-card p { margin: 0; color: var(--ks-muted); font-size: 12px; line-height: 1.45; }
+.ks-current .job { padding: 17px 18px; border: 1px solid var(--ks-border); border-radius: 16px; background: var(--ks-card); }
+.ks-current .job strong { font: 800 16px var(--ks-serif); }
+.ks-current .job p { margin: 7px 0; color: var(--ks-muted); font-size: 12px; }
+.ks-current .bottom { display: none; }
+@media (max-width: 760px) {
+  .ks-current .sidebar { display: none; }
+  .ks-current .main { margin-left: 0; padding-bottom: 76px; }
+  .ks-current .topbar { height: 64px; padding: 0 18px; }
+  .ks-current .content { gap: 20px; padding: 27px 17px 36px; }
+  .ks-current .welcome { padding: 27px 23px; }
+  .ks-current h1 { font-size: 30px; }
+  .ks-current .welcome-copy { font-size: 14px; }
+  .ks-current .metrics { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .ks-current .metric { min-height: 105px; padding: 15px; }
+  .ks-current .metric strong { font-size: 26px; }
+  .ks-current .actions-grid { grid-template-columns: 1fr; gap: 9px; }
+  .ks-current .action-card { padding: 14px; }
+  .ks-current .bottom { position: fixed; z-index: 2; inset: auto 0 0; display: flex; justify-content: space-around; padding: 8px 5px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--ks-border); background: hsl(45 43% 98% / .97); backdrop-filter: blur(12px); }
+  .ks-current .bottom a { display: grid; flex: 1; justify-items: center; gap: 3px; padding: 4px 2px; color: var(--ks-muted); font-size: 9px; font-weight: 700; }
+  .ks-current .bottom a:first-child { color: var(--ks-primary); }
+}

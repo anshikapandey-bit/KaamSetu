@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "KaamSetu"
+description = "A mobile-first local work marketplace connecting workers with fair opportunities. Workers can build profiles, find skill-matched jobs, and track applications; employers can post work and find suitable local workers."
+version = "1.0.0"
+id = "artifacts/kaamsetu"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22681
+
+[services.development]
+run = "pnpm --filter @workspace/kaamsetu run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kaamsetu", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/kaamsetu/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22681"
+BASE_PATH = "/"

@@ -1,6 +1,6 @@
-# [Project name]
+# KaamSetu
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A mobile-first demo marketplace that helps local workers find fair work and employers connect with skilled people nearby.
 
 ## Run & Operate
 
@@ -22,23 +22,32 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/kaamsetu/` — KaamSetu web app and visual theme
+- `artifacts/api-server/src/routes/` — marketplace, worker, application, and review API
+- `lib/api-spec/openapi.yaml` — API contract source of truth
+- `lib/db/src/schema/` — PostgreSQL table definitions
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Demo users share the project database; there is no sign-in or identity verification.
+- Sample listings and profiles are explicitly marked as demo data.
+- Employer verification is always shown as unverified; listing creators cannot set their own status.
+- Job matching uses skills, location, and availability and returns the reasons for each match.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Workers can create profiles, browse and filter local jobs, see explainable matches, apply, and follow application statuses. Employers can post listings, see matching workers, and respond to applications. Community members can flag suspicious listings for a human review queue. The dashboard summarizes listings, profiles, applications, successful connections, and pending review reports.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the UI mobile-first, readable, and easy to navigate for people with limited digital literacy.
+- Use the requested green-and-cream theme and large controls.
+- Never label an employer verified without a real verification process.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The app is a shared demo experience, not an authenticated production marketplace; do not imply that profiles or listings belong to a signed-in identity.
+- Demo listings are illustrative and must remain clearly labeled as samples.
 
 ## Pointers
 
